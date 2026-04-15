@@ -35,6 +35,7 @@ curl -fsSL "$REPO_URL/SKILL.md" -o "$INSTALL_DIR/SKILL.md"
 curl -fsSL "$REPO_URL/scripts/docx_io.py" -o "$INSTALL_DIR/scripts/docx_io.py"
 curl -fsSL "$REPO_URL/references/detection_principles.md" -o "$INSTALL_DIR/references/detection_principles.md"
 curl -fsSL "$REPO_URL/references/rewrite_methods.md" -o "$INSTALL_DIR/references/rewrite_methods.md"
+curl -fsSL "$REPO_URL/references/thesis_writing_guide.md" -o "$INSTALL_DIR/references/thesis_writing_guide.md"
 
 # --- Step 2: Check python-docx ---
 echo "==> Checking python-docx dependency..."

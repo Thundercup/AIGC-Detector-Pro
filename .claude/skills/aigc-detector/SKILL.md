@@ -1,11 +1,11 @@
 ---
 name: aigc-detector
-description: Academic paper AI content detection and rewriting assistant. Analyzes text for AI-generated characteristics, provides detailed rewrite suggestions. Supports .docx files, outputs reports and rewritten documents. Bilingual: Chinese & English.
+description: Academic paper AI content detection, rewriting, and thesis writing assistant. Analyzes text for AI-generated characteristics, provides detailed rewrite suggestions, and generates full thesis drafts. Supports .docx files, outputs reports and rewritten/formatted documents. Bilingual: Chinese & English.
 ---
 
-# AIGC Detection & Rewriting Assistant
+# AIGC Detection, Rewriting & Thesis Writing Assistant
 
-Bilingual academic paper AI content (AIGC) detection and rewriting assistant. Analyzes text across 5 dimensions for AI-generated characteristics, provides targeted rewrite guidance. Supports Chinese and English academic papers.
+Bilingual academic paper assistant. Two modes: **Detection & Rewrite** (analyze existing papers for AI-generated content) and **Thesis Writing** (generate full thesis drafts from templates and code). Supports Chinese and English academic papers.
 
 ---
 
@@ -19,6 +19,11 @@ Bilingual academic paper AI content (AIGC) detection and rewriting assistant. An
 **改写论文 / Rewrite paper:**
 - "帮我改写这篇论文降低AI率：/path/to/thesis.docx"
 - "Help me rewrite this paper to reduce AI detection rate: /path/to/thesis.docx"
+
+**撰写论文 / Write thesis:**
+- "帮我写毕业论文，模板在About/目录"
+- "Help me write my graduation thesis, template is in About/"
+- "开始论文写作模式"（然后按提示操作）
 
 ---
 
@@ -38,6 +43,27 @@ Bilingual academic paper AI content (AIGC) detection and rewriting assistant. An
 ## 工作流程
 
 严格按照以下步骤执行，不要跳过任何步骤。
+
+### 模式选择（Mode Selection）
+
+根据用户意图选择工作模式：
+
+1. **检测/改写模式（Detection & Rewrite Mode）** — 用户要求分析或改写已有论文
+   - 触发词："分析""检测""改写""降低AI率""AIGC" + 文件路径或文本
+   - 执行下方 **检测/改写模式** 步骤（Step 0-5）
+
+2. **论文写作模式（Thesis Writing Mode）** — 用户要求撰写或生成论文
+   - 触发词："写论文""撰写""生成论文""毕业论文""thesis""write paper"
+   - 执行下方 **论文写作模式** 步骤（Step W0-W5）
+   - 详细指令见 `references/thesis_writing_guide.md`
+
+如果用户意图不明确，使用 AskUserQuestion 工具询问：
+> 1. "检测/改写已有论文"
+> 2. "撰写新论文"
+
+---
+
+### 检测/改写模式（Detection & Rewrite Mode）
 
 ### Step 0：语言检测
 
@@ -374,6 +400,25 @@ python3 .claude/skills/aigc-detector/scripts/docx_io.py read "<文件路径>"
 
 **Estimated post-rewrite AIGC risk:** From XX% to approximately XX-XX%
 ```
+
+---
+
+### 论文写作模式（Thesis Writing Mode）
+
+当用户选择论文写作模式时，执行以下步骤。每一步的详细指令见 `references/thesis_writing_guide.md`。
+
+- **Step W0: 环境准备** — 在工作目录创建 `About/` 目录，引导用户放入材料（论文模板 .docx、范文、代码、文档），扫描并分类文件。使用 `docx_io.py analyze` 解析模板格式。
+- **Step W1: 材料分析** — 解析模板格式要求，阅读范文理解写作风格，分析代码理解项目架构，收集用户信息（题目、学校、姓名、导师、字数等）。
+- **Step W2: 大纲生成** — 基于模板结构、范文模式、代码分析生成论文大纲，用户审核修改后确认。
+- **Step W3: 逐章撰写** — 按大纲逐章生成内容。代码相关章节基于实际代码分析。全程应用 AIGC 安全写作技法（参考 `references/rewrite_methods.md`）。每章生成后暂停，让用户确认或修改后再继续。维护全局上下文摘要确保跨章节一致性。
+- **Step W4: 格式应用与输出** — 使用 `docx_io.py formatted_write` 命令将 Markdown 文本转换为格式化 .docx（自动应用模板的页面布局、字体、行距等）。
+- **Step W5: AIGC 检测与优化** — 对完整论文执行检测流程（Step 0-3），识别高风险段落并改写优化，直到通过检测。
+
+**论文写作模式约束：**
+1. 不编造虚假的实验数据、代码功能或项目背景
+2. 代码分析章节必须基于 About/ 中的实际代码，不能凭空捏造
+3. 参考文献仅来自用户提供的材料，不编造文献引用
+4. 每章生成后需用户确认，不自动生成全篇
 
 ---
 

@@ -35,9 +35,13 @@ AIGC-Killer-Pro 利用 Claude 的深层语义理解能力，精准识别论文�
 ## 特性
 
 - **5 维度深度分析** — 句式规整度、逻辑词密度、语态特征、词汇多样性、论证深度
+- **论文编写模式** — 自动解析学校模板、分析项目代码、逐章生成论文初稿、格式化输出
+- **模板格式适配** — 自动提取 .docx 模板的页面布局、字体、行距等格式并应用到生成文档
 - **纯语义驱动** — 不依赖关键词匹配，由 Claude 进行深层语义理解分析
 - **学科自适应** — 支持文科、理工科、医学、经管等学科特化阈值
-- **.docx 支持** — 直接读取 Word 文档，改写后输出新 .docx（自动保留原始副本）
+- **.docx 支持** — 直接读取/生成 Word 文档，改写后输出新 .docx（自动保留原始副本）
+- **中英双语** — 支持中文和英文学术论文的检测与改写
+- **多 Agent 兼容** — Claude Code / Codex / Cursor / Windsurf / Gemini
 - **一键安装** — 一条命令完成安装
 
 ## 安装
@@ -114,6 +118,14 @@ curl -sL https://raw.githubusercontent.com/free-revalution/AIGC-Killer-Pro/main/
 帮我改写这篇论文降低AI率：/path/to/thesis.docx
 ```
 
+### 撰写毕业论文
+
+```
+帮我写毕业论文，模板在About/目录
+```
+
+将学校模板、范文、项目代码放入 `About/` 目录，Skill 会自动解析模板格式、分析代码、生成论文。
+
 ## 工作流程
 
 ```
@@ -143,6 +155,30 @@ curl -sL https://raw.githubusercontent.com/free-revalution/AIGC-Killer-Pro/main/
   (保留原始副本 → 改写 → 新 .docx)
 ```
 
+### 论文编写模式
+
+```
+用户提供材料 (About/ 目录: 模板 + 范文 + 代码)
+        │
+        ▼
+  Step W0: 环境准备 + 模板格式解析
+        │
+        ▼
+  Step W1: 材料分析 (模板格式/范文风格/代码架构)
+        │
+        ▼
+  Step W2: 大纲生成 + 用户审核
+        │
+        ▼
+  Step W3: 逐章撰写 (AIGC 安全写作)
+        │
+        ▼
+  Step W4: 格式化输出 .docx
+        │
+        ▼
+  Step W5: AIGC 检测 + 优化
+```
+
 ### 检测报告示例
 
 ![AIGC检测报告示例](picture/example.png)
@@ -168,10 +204,11 @@ AIGC-Killer-Pro/
 ├── .claude/skills/aigc-detector/      # 核心内容
 │   ├── SKILL.md                        # Skill 主入口
 │   ├── scripts/
-│   │   └── docx_io.py                  # Word 文档读写脚本
+│   │   └── docx_io.py                  # Word 文档读写/模板解析脚本
 │   └── references/
 │       ├── detection_principles.md     # AIGC 检测原理知识库
-│       └── rewrite_methods.md          # 改写技法详细指南
+│       ├── rewrite_methods.md          # 改写技法详细指南
+│       └── thesis_writing_guide.md     # 论文编写模式详细指南
 ├── agents/                             # 各 Agent 入口指针模板
 │   ├── codex.md                        # Codex CLI 模板
 │   ├── cursor.mdc                      # Cursor 模板

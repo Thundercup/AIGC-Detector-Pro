@@ -15,7 +15,7 @@
 </p>
 ---
 
-> A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) Skill for academic paper AI content (AIGC) detection and rewriting. Analyzes papers across 5 dimensions for AI-generated characteristics, provides targeted rewrite guidance, and helps reduce AIGC detection rates.
+> A [Claude Code](https://docs.anthropic.com/en/docs/claude-code) Skill for academic paper AI content (AIGC) detection, rewriting, and thesis writing. Analyzes papers across 5 dimensions for AI-generated characteristics, provides targeted rewrite guidance, and can generate full thesis drafts from templates and code.
 
 **One-line install, ready to use:**
 
@@ -34,12 +34,14 @@ AIGC-Killer-Pro leverages Claude's deep semantic understanding to precisely iden
 ## Features
 
 - **5-Dimension Deep Analysis** — Sentence regularity, connector density, voice characteristics, vocabulary diversity, argumentation depth
+- **Thesis Writing Mode** — Auto-parse school templates, analyze project code, generate thesis drafts chapter-by-chapter, formatted output
+- **Template Format Adaptation** — Extracts page layout, fonts, line spacing from .docx templates and applies to generated documents
 - **Pure Semantic-Driven** — No keyword matching; powered by Claude's deep semantic understanding
 - **Discipline-Adaptive** — Specialized thresholds for humanities, STEM, medicine, and business
-- **.docx Support** — Directly reads Word documents; outputs rewritten .docx while preserving formatting
+- **.docx Support** — Directly reads/generates Word documents; outputs rewritten .docx while preserving formatting
 - **Bilingual** — Supports both Chinese and English academic papers
 - **One-Line Install** — Single command setup
-- **Multi-Agent Compatible** — Works with Claude Code, Codex, Cursor, Windsurf, Gemini CLI, GitHub Copilot
+- **Multi-Agent Compatible** — Works with Claude Code, Codex, Cursor, Windsurf, Gemini CLI
 
 ## Installation
 
@@ -109,7 +111,13 @@ Detect AI rate in this paper
 Help me rewrite this paper to reduce AI detection rate: /path/to/thesis.docx
 ```
 
-## Workflow
+### Write Graduation Thesis
+
+```
+Help me write my graduation thesis, template is in About/
+```
+
+Place your school template, sample papers, and project code in the `About/` directory. The Skill will auto-parse template formatting, analyze code, and generate the thesis.
 
 ```
 User provides paper (.docx or pasted text)
@@ -140,6 +148,30 @@ User provides paper (.docx or pasted text)
         ▼
   Step 5: Rewrite & Export Document
   (Backup original → Rewrite → New .docx)
+```
+
+### Thesis Writing Mode
+
+```
+User provides materials (About/ dir: template + sample + code)
+        │
+        ▼
+  Step W0: Environment Setup + Template Parsing
+        │
+        ▼
+  Step W1: Material Analysis (template/sample/code)
+        │
+        ▼
+  Step W2: Outline Generation + User Review
+        │
+        ▼
+  Step W3: Chapter-by-Chapter Writing (AIGC-safe)
+        │
+        ▼
+  Step W4: Formatted .docx Output
+        │
+        ▼
+  Step W5: AIGC Detection + Optimization
 ```
 
 ### Detection Report Sample
@@ -187,10 +219,11 @@ AIGC-Killer-Pro/
 ├── .claude/skills/aigc-detector/      # Core content
 │   ├── SKILL.md                        # Skill main entry
 │   ├── scripts/
-│   │   └── docx_io.py                  # Word document I/O script
+│   │   └── docx_io.py                  # Word document I/O + template parsing script
 │   └── references/
 │       ├── detection_principles.md     # AIGC detection principles knowledge base
-│       └── rewrite_methods.md          # Rewrite techniques detailed guide
+│       ├── rewrite_methods.md          # Rewrite techniques detailed guide
+│       └── thesis_writing_guide.md     # Thesis writing mode detailed guide
 ├── agents/                             # Agent entry pointer templates
 │   ├── codex.md                        # Codex CLI template
 │   ├── cursor.mdc                      # Cursor template
