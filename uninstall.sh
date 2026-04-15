@@ -50,7 +50,11 @@ remove_markers() {
 }
 
 remove_markers "$HOME/.codex/AGENTS.md"
-remove_markers "$DIR/.cursor/rules/aigc-detector.mdc"
+# Cursor uses file_entry (entire file), so delete it directly
+if [ -f "$DIR/.cursor/rules/aigc-detector.mdc" ]; then
+    rm -f "$DIR/.cursor/rules/aigc-detector.mdc"
+    echo "    Removed $DIR/.cursor/rules/aigc-detector.mdc"
+fi
 remove_markers "$DIR/.windsurfrules"
 remove_markers "$DIR/GEMINI.md"
 

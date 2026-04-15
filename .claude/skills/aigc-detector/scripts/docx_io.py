@@ -37,13 +37,15 @@ def replace_paragraph(file_path: str, index: int, new_text: str, output_path: st
         output_path: Output path (defaults to {file}_rewritten.docx)
     """
     from docx import Document
+    from docx.oxml.ns import qn
 
     if output_path is None:
         base, ext = os.path.splitext(file_path)
         output_path = f"{base}_rewritten{ext}"
 
-    # Copy to preserve original
-    shutil.copy2(file_path, output_path)
+    # Copy to preserve original (skip if input and output are the same file)
+    if os.path.abspath(file_path) != os.path.abspath(output_path):
+        shutil.copy2(file_path, output_path)
 
     doc = Document(output_path)
     if index < 1 or index > len(doc.paragraphs):
@@ -54,12 +56,47 @@ def replace_paragraph(file_path: str, index: int, new_text: str, output_path: st
         sys.exit(1)
 
     para = doc.paragraphs[index - 1]
-    # Preserve paragraph style
+
+    # Save format from first run BEFORE clearing
+    # Merge all w:rPr elements (some .docx files split them across multiple rPr)
+    orig_size = None
+    orig_name = None
+    orig_ea = None
+    orig_bold = None
+    for r in para.runs:
+        if r.text.strip():
+            orig_size = r.font.size
+            orig_name = r.font.name
+            orig_bold = r.font.bold
+            for rpr in r._element.findall(qn("w:rPr")):
+                rf = rpr.find(qn("w:rFonts"))
+                if rf is not None:
+                    if orig_ea is None:
+                        orig_ea = rf.get(qn("w:eastAsia"))
+            break
+
     style = para.style
     para.clear()
     run = para.add_run(new_text)
-    run.font.size = para.runs[0].font.size if para.runs else None
-    run.font.name = para.runs[0].font.name if para.runs else None
+
+    # Restore saved format
+    if orig_size is not None:
+        run.font.size = orig_size
+    if orig_name is not None:
+        run.font.name = orig_name
+    if orig_bold is not None:
+        run.font.bold = orig_bold
+    if orig_ea is not None:
+        rpr = run._element.find(qn("w:rPr"))
+        if rpr is None:
+            rpr = run._element.makeelement(qn("w:rPr"), {})
+            run._element.insert(0, rpr)
+        rfonts = rpr.find(qn("w:rFonts"))
+        if rfonts is None:
+            rfonts = rpr.makeelement(qn("w:rFonts"), {})
+            rpr.insert(0, rfonts)
+        rfonts.set(qn("w:eastAsia"), orig_ea)
+
     para.style = style
 
     doc.save(output_path)
@@ -291,11 +328,15 @@ def _extract_template_formats(tdoc):
     for i, (size, props) in enumerate(sorted_sizes):
         if i == 0 and props["count"] <= 3 and props["size_pt"] >= 16:
             fmt["title"] = props
-        elif i == 0 or (i == 1 and "title" in fmt):
+            continue
+        # Assign remaining levels by position (skip body once reached)
+        if "title" in fmt and i == 1 and "heading1" not in fmt:
             fmt["heading1"] = props
-        elif i == 1 or (i == 2 and "heading1" in fmt):
+        elif "heading1" not in fmt:
+            fmt["heading1"] = props
+        elif "heading2" not in fmt:
             fmt["heading2"] = props
-        elif i == 2 or (i == 3 and "heading2" in fmt):
+        elif "heading3" not in fmt:
             fmt["heading3"] = props
         else:
             fmt["body"] = props
@@ -415,6 +456,52 @@ def _apply_format(paragraph, props, fmt):
                 rfonts.set(qn("w:hAnsi"), ascii_f)
 
 
+def _add_markdown_runs(paragraph, text, props, fmt):
+    """Parse **bold** and *italic* markers in text and add runs accordingly."""
+    parts = re.split(r'(\*\*\*.*?\*\*\*|\*\*.*?\*\*|\*.*?\*)', text)
+    for part in parts:
+        if not part:
+            continue
+        if part.startswith('***') and part.endswith('***'):
+            # Bold + Italic
+            run = paragraph.add_run(part[3:-3])
+            run.font.bold = True
+            run.font.italic = True
+        elif part.startswith('**') and part.endswith('**'):
+            # Bold
+            run = paragraph.add_run(part[2:-2])
+            run.font.bold = True
+        elif part.startswith('*') and part.endswith('*'):
+            # Italic
+            run = paragraph.add_run(part[1:-1])
+            run.font.italic = True
+        else:
+            # Plain text
+            paragraph.add_run(part)
+    # Apply base format to all runs
+    if props:
+        for run in paragraph.runs:
+            size_pt = props.get("size_pt")
+            if size_pt:
+                run.font.size = Pt(size_pt)
+            ea = props.get("eastAsia")
+            ascii_f = props.get("ascii")
+            if ea or ascii_f:
+                rpr = run._element.find(qn("w:rPr"))
+                if rpr is None:
+                    rpr = run._element.makeelement(qn("w:rPr"), {})
+                    run._element.insert(0, rpr)
+                rfonts = rpr.find(qn("w:rFonts"))
+                if rfonts is None:
+                    rfonts = rpr.makeelement(qn("w:rFonts"), {})
+                    rpr.insert(0, rfonts)
+                if ea:
+                    rfonts.set(qn("w:eastAsia"), ea)
+                if ascii_f:
+                    rfonts.set(qn("w:ascii"), ascii_f)
+                    rfonts.set(qn("w:hAnsi"), ascii_f)
+
+
 def formatted_write_docx(file_path: str, text: str, template_path: str = None):
     """Write formatted Markdown text to a .docx file.
 
@@ -454,17 +541,21 @@ def formatted_write_docx(file_path: str, text: str, template_path: str = None):
 
         # Detect Markdown headings
         if stripped.startswith("### "):
-            p = doc.add_paragraph(stripped[4:])
+            p = doc.add_paragraph()
+            _add_markdown_runs(p, stripped[4:], fmt.get("heading3"), fmt)
             _apply_format(p, fmt.get("heading3"), fmt)
         elif stripped.startswith("## "):
-            p = doc.add_paragraph(stripped[3:])
+            p = doc.add_paragraph()
+            _add_markdown_runs(p, stripped[3:], fmt.get("heading2"), fmt)
             _apply_format(p, fmt.get("heading2"), fmt)
         elif stripped.startswith("# "):
-            p = doc.add_paragraph(stripped[2:])
+            p = doc.add_paragraph()
+            _add_markdown_runs(p, stripped[2:], fmt.get("heading1"), fmt)
             _apply_format(p, fmt.get("heading1"), fmt)
         else:
-            # Body text
-            p = doc.add_paragraph(stripped)
+            # Body text (supports **bold** and *italic*)
+            p = doc.add_paragraph()
+            _add_markdown_runs(p, stripped, fmt.get("body"), fmt)
             _apply_format(p, fmt.get("body"), fmt)
 
     # Ensure output directory exists
@@ -492,13 +583,18 @@ def main():
         print(text)
     elif command == "replace":
         if len(sys.argv) < 4:
-            print("Usage: python3 docx_io.py replace <file_path> <paragraph_index>",
-                  file=sys.stderr)
+            print("Usage: python3 docx_io.py replace <file_path> <paragraph_index> "
+                  "[--output <path>]", file=sys.stderr)
             print("  Paragraph text is read from stdin.", file=sys.stderr)
             sys.exit(1)
         index = int(sys.argv[3])
+        out_path = None
+        if "--output" in sys.argv:
+            oidx = sys.argv.index("--output")
+            if oidx + 1 < len(sys.argv):
+                out_path = sys.argv[oidx + 1]
         new_text = sys.stdin.read().strip()
-        output = replace_paragraph(file_path, index, new_text)
+        output = replace_paragraph(file_path, index, new_text, output_path=out_path)
         print(output, file=sys.stderr)
     elif command == "write":
         text = sys.stdin.read()

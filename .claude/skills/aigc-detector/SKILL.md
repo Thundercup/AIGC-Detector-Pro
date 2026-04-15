@@ -67,7 +67,7 @@ Bilingual academic paper assistant. Two modes: **Detection & Rewrite** (analyze 
 
 ### Step 0：语言检测
 
-在读取文档之前，先检测论文语言：
+检测论文语言。如果用户提供了 .docx 文件，先执行 Step 1 读取文档获取文本后再检测语言。
 
 1. 分析输入文本的前500个字符
 2. 如果非标点字符中中文字符占比 > 60% → 语言 = "zh"
@@ -335,19 +335,25 @@ python3 .claude/skills/aigc-detector/scripts/docx_io.py read "<文件路径>"
 
    使用 docx_io.py 的 replace 子命令逐个替换高风险段落，保留原始文档的格式、图片和排版：
 
+   **首次替换**（从原始文件生成改写版本）：
    ```bash
-   echo "<改写后的段落文本>" | python3 ~/.claude/skills/aigc-detector/scripts/docx_io.py replace "<原始文件路径>" <段落编号>
+   echo "<改写后的段落文本>" | python3 ~/.claude/skills/aigc-detector/scripts/docx_io.py replace "<原始文件路径>" <段落编号> --output "<原始文件名去扩展名>_rewritten.docx"
+   ```
+
+   **后续替换**（在改写版本上继续替换，用 --output 指向同一个输出文件）：
+   ```bash
+   echo "<改写后的段落文本>" | python3 ~/.claude/skills/aigc-detector/scripts/docx_io.py replace "<上一步的输出文件>" <段落编号> --output "<上一步的输出文件>"
    ```
 
    如果全局路径不存在，回退到项目级路径：
    ```bash
-   echo "<改写后的段落文本>" | python3 .claude/skills/aigc-detector/scripts/docx_io.py replace "<原始文件路径>" <段落编号>
+   echo "<改写后的段落文本>" | python3 .claude/skills/aigc-detector/scripts/docx_io.py replace "<文件路径>" <段落编号> --output "<输出路径>"
    ```
 
    - 先保存原始副本：`cp "<原始文件路径>" "<文件名去扩展名>_backup.docx"`
-   - 逐个替换高风险和中风险段落（按段落编号）
+   - 首次替换指定 `--output` 为 `{文件名}_rewritten.docx`
+   - 后续替换将上一步的输出作为输入，`--output` 指向同一文件
    - 保留低风险段落不变
-   - 默认输出为 `{文件名}_rewritten.docx`
 
 4. **输出改写对比摘要**
 
