@@ -1,107 +1,48 @@
+<div align="center">
+
 # AIGC-Killer-Pro
 
-<p align="center">
-  <strong>论文 AIGC 检测 | AI 降率 | 学术写作助手</strong>
-</p>
+**论文 AIGC 检测 / AI 降率 / 毕业论文编写**
 
-<p align="center">
-  <a href="https://github.com/free-revalution/AIGC-Killer-Pro/stargazers"><img src="https://img.shields.io/github/stars/free-revalution/AIGC-Killer-Pro?style=social" alt="Stars"></a>
-  <a href="https://github.com/free-revalution/AIGC-Killer-Pro/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
-  <a href="https://github.com/free-revalution/AIGC-Killer-Pro/releases"><img src="https://img.shields.io/github/stars/free-revalution/AIGC-Killer-Pro?style=social" alt="Stars"></a>
-</p>
+基于 Claude Code 的学术论文 AI 内容检测与改写 Skill，从 5 个维度深度分析 AI 生成特征，提供科学改写指导，并支持从模板到论文的全流程生成。
 
-<p align="center">
-  <a href="README.en.md">English</a> | 简体中文
-</p>
+[![Stars](https://img.shields.io/github/stars/free-revalution/AIGC-Killer-Pro?style=social)](https://github.com/free-revalution/AIGC-Killer-Pro/stargazers)
+[![License](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[English](README.en.md) | 简体中文
 
 ---
 
-> 基于 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) 的学术论文 AIGC 检测与改写 Skill。从 5 个维度深度分析论文的 AI 生成特征，提供针对性改写建议，帮助降低 AIGC 检测率。
-
-**一句话安装，开箱即用：**
-
 ```bash
 curl -sL https://raw.githubusercontent.com/free-revalution/AIGC-Killer-Pro/main/install.sh | bash
 ```
 
-> 需要提前安装 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) 和 Python 3.8+
+需要 [Claude Code](https://docs.anthropic.com/en/docs/claude-code) + Python 3.8+
 
-## 为什么做这个？
+</div>
 
-2026 年主流 AIGC 检测平台已全面升级，AI 内容识别准确率大幅提升。单纯同义词替换已无法通过检测，必须在语义结构层面进行重构。
+## 为什么
 
-AIGC-Killer-Pro 利用 Claude 的深层语义理解能力，精准识别论文中的 AI 生成痕迹，并提供科学的改写指导。
+2026 年主流 AIGC 检测平台已全面升级，AI 内容识别准确率大幅提升。单纯同义词替换已无法通过检测——必须在语义结构层面进行重构。AIGC-Killer-Pro 利用 Claude 的深层语义理解，精准识别论文中的 AI 痕迹，提供科学的改写方案。
 
-## 特性
+## 三大模式
 
-- **5 维度深度分析** — 句式规整度、逻辑词密度、语态特征、词汇多样性、论证深度
-- **论文编写模式** — 自动解析学校模板、分析项目代码、逐章生成论文初稿、格式化输出
-- **模板格式适配** — 自动提取 .docx 模板的页面布局、字体、行距等格式并应用到生成文档
-- **纯语义驱动** — 不依赖关键词匹配，由 Claude 进行深层语义理解分析
-- **学科自适应** — 支持文科、理工科、医学、经管等学科特化阈值
-- **.docx 支持** — 直接读取/生成 Word 文档，改写后输出新 .docx（自动保留原始副本）
-- **中英双语** — 支持中文和英文学术论文的检测与改写
-- **多 Agent 兼容** — Claude Code / Codex / Cursor / Windsurf / Gemini
-- **一键安装** — 一条命令完成安装
+### AIGC 检测
 
-## 安装
-
-### 方式一：在 Claude Code 中一键安装（推荐）
-
-打开 Claude Code，直接发送以下消息：
+从 5 个维度对论文进行深度语义分析，生成段落级检测报告，精准定位高风险内容。
 
 ```
-帮我安装 AIGC-Detector 学术论文 AIGC 检测助手，执行：curl -sL https://raw.githubusercontent.com/free-revalution/AIGC-Killer-Pro/main/install.sh | bash
+提供论文 (.docx 或粘贴文本)
+  -> 语言检测（中/英自动识别）
+  -> 5 维度语义分析
+     |  句式规整度   25%
+     |  逻辑词密度   20%
+     |  语态特征     15%
+     |  词汇多样性   15%
+     |  论证深度     25%
+  -> 输出检测报告（终端 + Markdown）
 ```
 
-Claude Code 会自动执行安装命令，完成后即可在当前和所有项目中使用 `/aigc-detector`。
-
-### 方式二：终端安装
-
-```bash
-curl -sL https://raw.githubusercontent.com/free-revalution/AIGC-Killer-Pro/main/install.sh | bash
-```
-
-安装脚本会自动完成：
-1. 下载 Skill 文件到 `~/.claude/skills/aigc-detector/`（Claude Code 自动识别）
-2. 检查并安装 `python-docx` 依赖
-
-卸载：
-
-```bash
-rm -rf ~/.claude/skills/aigc-detector/
-```
-
-## 多 Agent 支持
-
-AIGC-Detector 适配多种 AI Agent，一条命令即可安装：
-
-| Agent | 兼容性 | 安装命令 |
-|-------|:------:|---------|
-| Claude Code | 完全支持 | `curl -sL ... \| bash`（默认） |
-| Codex CLI | 部分支持 | `curl -sL ... \| bash -s -- --agent codex` |
-| Cursor | 部分支持 | `curl -sL ... \| bash -s -- --agent cursor --dir /your/project` |
-| Windsurf | 部分支持 | `curl -sL ... \| bash -s -- --agent windsurf --dir /your/project` |
-| Gemini CLI | 部分支持 | `curl -sL ... \| bash -s -- --agent gemini --dir /your/project` |
-| 全部安装 | — | `curl -sL ... \| bash -s -- --agent all` |
-
-> **兼容性说明：**
-> - **完全支持**：Skill 系统精确触发，完整执行多步工作流，交互式用户选择
-> - **部分支持**：指令作为上下文注入，Agent 可执行 bash/Python/文件操作，但步骤执行为最佳努力（不保证严格按顺序），无精确触发机制
->
-> GitHub Copilot 不支持（无法执行 shell 命令和文件操作，工作流不兼容）
-
-卸载：
-
-```bash
-curl -sL https://raw.githubusercontent.com/free-revalution/AIGC-Killer-Pro/main/uninstall.sh | bash
-```
-
-## 使用方式
-
-安装完成后，在 Claude Code 中直接对话即可触发 Skill：
-
-### 检测论文 AIGC 特征
+在 Claude Code 中直接对话即可触发：
 
 ```
 分析这篇论文的AIGC特征：/path/to/thesis.docx
@@ -112,140 +53,151 @@ curl -sL https://raw.githubusercontent.com/free-revalution/AIGC-Killer-Pro/main/
 （然后粘贴论文文本）
 ```
 
-### 改写论文降低 AI 率
+![检测报告示例](picture/example.png)
+
+### 智能改写
+
+基于 7 大改写技法，自动改写高风险段落并输出 .docx，保持原始格式不变。
+
+| 技法 | 原理 | 做法 |
+|------|------|------|
+| 句式重构 | 突发性检测 | 合并短句、长短交替、语态转换 |
+| 破解模板 | 模式匹配 | 删除"首先/其次/最后"等 AI 模板句式 |
+| 添加主语 | 句法分析 | 为无主句补充行为主体 |
+| 概念具象 | 语义一致性 | 抽象表述 -> 具体数据/案例 |
+| 论证补全 | 语义一致性 | 线性论证 -> 多维证据 + 对比 |
+| 困惑度提升 | 困惑度检测 | 使用非常规但准确的学术表达 |
+| 风格断裂 | 分类器检测 | 段落间切换表达风格，打破一致性 |
 
 ```
 帮我改写这篇论文降低AI率：/path/to/thesis.docx
 ```
 
-### 撰写毕业论文
+### 论文编写
+
+放入学校模板、范文、项目代码，自动解析格式、分析代码、逐章生成论文初稿，输出格式化 .docx。
+
+```
+准备材料 (About/ 目录: 模板 + 范文 + 代码)
+  -> W0 环境准备 + 模板格式解析
+  -> W1 材料分析（格式/风格/架构）
+  -> W2 大纲生成 + 用户审核
+  -> W3 逐章撰写（AIGC 安全写作）
+  -> W4 格式化输出 .docx
+  -> W5 AIGC 检测 + 迭代优化
+```
 
 ```
 帮我写毕业论文，模板在About/目录
 ```
 
-将学校模板、范文、项目代码放入 `About/` 目录，Skill 会自动解析模板格式、分析代码、生成论文。
-
-## 工作流程
+**材料准备：**
 
 ```
-用户提供论文 (.docx 或粘贴文本)
-        │
-        ▼
-  Step 1: 读取文档
-        │
-        ▼
-  Step 2: 5 维度语义分析
-  ├─ 句式规整度 (25%)
-  ├─ 逻辑词密度 (20%)
-  ├─ 语态特征   (15%)
-  ├─ 词汇多样性 (15%)
-  └─ 论证深度   (25%)
-        │
-        ▼
-  Step 3: 输出检测报告
-  (终端 + 可选 Markdown 文件)
-        │
-        ▼
-  Step 4: 提供改写建议
-  (逐段标注 + 改写示例)
-        │
-        ▼
-  Step 5: 改写并输出文档
-  (保留原始副本 → 改写 → 新 .docx)
+About/
+├── 论文模板.docx          # 学校提供的毕业论文格式模板
+├── 范文.docx              # 同校同专业优秀论文（参考风格）
+├── src/                   # 毕业设计源代码
+│   └── ...
+├── 项目文档.md            # README、架构说明等
+└── 开题报告.docx          # 其他相关材料
 ```
 
-### 论文编写模式
+## 快速开始
 
-```
-用户提供材料 (About/ 目录: 模板 + 范文 + 代码)
-        │
-        ▼
-  Step W0: 环境准备 + 模板格式解析
-        │
-        ▼
-  Step W1: 材料分析 (模板格式/范文风格/代码架构)
-        │
-        ▼
-  Step W2: 大纲生成 + 用户审核
-        │
-        ▼
-  Step W3: 逐章撰写 (AIGC 安全写作)
-        │
-        ▼
-  Step W4: 格式化输出 .docx
-        │
-        ▼
-  Step W5: AIGC 检测 + 优化
+**1. 安装**
+
+在终端或 Claude Code 中执行：
+
+```bash
+curl -sL https://raw.githubusercontent.com/free-revalution/AIGC-Killer-Pro/main/install.sh | bash
 ```
 
-### 检测报告示例
+安装脚本自动完成：
+- 下载 Skill 文件到 `~/.claude/skills/aigc-detector/`
+- 检查并安装 `python-docx` 依赖
 
-![AIGC检测报告示例](picture/example.png)
+**2. 使用**
 
-## 改写技法
+安装完成后，在 Claude Code 中自然对话即可触发：
 
-Skill 内置 7 大改写技法，基于学术界主流 AIGC 检测原理（困惑度、突发性、分类器、概率曲率）设计：
+```
+/aigc-detector
+```
 
-| 技法 | 对应检测方法 | 核心思路 |
-|------|------------|---------|
-| 句式重构 | 突发性检测 (Burstiness) | 合并短句、长短交替、语态转换 |
-| 破解模板 | 模式匹配 | 删除"首先/其次/最后"等 AI 模板 |
-| 添加主语 | 句法分析 | 为无主句补充行为主体 |
-| 概念具象 | 语义一致性 | 抽象表述 → 具体数据/案例 |
-| 论证补全 | 语义一致性 | 线性论证 → 多维证据 + 对比研究 |
-| 困惑度提升 | 困惑度检测 (Perplexity) | 使用非常规但准确的学术表达 |
-| 风格断裂 | 分类器检测 | 段落间切换表达风格，打破一致性 |
+**3. 卸载**
+
+```bash
+curl -sL https://raw.githubusercontent.com/free-revalution/AIGC-Killer-Pro/main/uninstall.sh | bash
+```
+
+## 多 Agent 支持
+
+| Agent | 支持 | 安装 |
+|-------|:----:|------|
+| Claude Code | 完全 | `curl -sL ... \| bash` |
+| Codex CLI | 部分 | `curl -sL ... \| bash -s -- --agent codex` |
+| Cursor | 部分 | `curl -sL ... \| bash -s -- --agent cursor --dir /project` |
+| Windsurf | 部分 | `curl -sL ... \| bash -s -- --agent windsurf --dir /project` |
+| Gemini CLI | 部分 | `curl -sL ... \| bash -s -- --agent gemini --dir /project` |
+| 全部 | — | `curl -sL ... \| bash -s -- --agent all` |
+
+- **完全支持**：Skill 精确触发，完整执行多步工作流，交互式用户选择
+- **部分支持**：指令作为上下文注入，可执行 bash/Python/文件操作，步骤执行为最佳努力
+
+## 检测原理
+
+基于学术界 5 大主流 AIGC 检测技术设计维度与阈值：
+
+| 检测技术 | 代表平台 | 对应维度 |
+|---------|---------|---------|
+| 困惑度检测 (Perplexity) | DetectGPT, OpenAI | 困惑度提升技法 |
+| 突发性检测 (Burstiness) | GPTZero | 句式规整度 (25%) |
+| 分类器检测 (Classifier) | RoBERTa-based | 风格断裂技法 |
+| 多特征融合 | Ghostbuster, UC Berkeley | 5 维度综合评分 |
+| 概率曲率分析 | — | 论证深度 (25%) |
+
+支持学科自适应阈值：文科、理工科、医学、经管各有特化判定标准。
 
 ## 项目结构
 
 ```
 AIGC-Killer-Pro/
-├── .claude/skills/aigc-detector/      # 核心内容
-│   ├── SKILL.md                        # Skill 主入口
+├── .claude/skills/aigc-detector/   # 核心 Skill
+│   ├── SKILL.md                     # 主入口（模式路由 + 检测/编写流程）
 │   ├── scripts/
-│   │   └── docx_io.py                  # Word 文档读写/模板解析脚本
+│   │   └── docx_io.py               # Word 文档读写/模板解析/格式化输出
 │   └── references/
-│       ├── detection_principles.md     # AIGC 检测原理知识库
-│       ├── rewrite_methods.md          # 改写技法详细指南
-│       └── thesis_writing_guide.md     # 论文编写模式详细指南
-├── agents/                             # 各 Agent 入口指针模板
-│   ├── codex.md                        # Codex CLI 模板
-│   ├── cursor.mdc                      # Cursor 模板
-│   ├── windsurf.md                     # Windsurf 模板
-│   └── gemini.md                       # Gemini CLI 模板
-├── install.sh                          # 一键安装脚本（支持多 Agent）
-├── uninstall.sh                        # 卸载脚本
-├── README.md
-├── LICENSE
-└── .gitignore
+│       ├── detection_principles.md  # AIGC 检测原理知识库
+│       ├── rewrite_methods.md       # 7 大改写技法指南（中/英）
+│       └── thesis_writing_guide.md  # 论文编写模式完整指南
+├── agents/                          # Agent 入口模板
+│   ├── codex.md
+│   ├── cursor.mdc
+│   ├── windsurf.md
+│   └── gemini.md
+├── install.sh                       # 一键安装
+├── uninstall.sh                     # 一键卸载
+└── picture/
+    └── example.png                  # 检测报告示例截图
+```
+
+## 高级配置
+
+**全局自动检测** — 在 `~/.claude/CLAUDE.md` 中添加以下内容，Claude Code 会在任何项目中自动识别 AIGC 相关意图并提示安装：
+
+```markdown
+## AIGC-Detector
+当用户提到论文检测、AIGC检测、AI降率、学术写作等需求时，检查是否已安装 aigc-detector skill。
+如未安装，建议执行：curl -sL https://raw.githubusercontent.com/free-revalution/AIGC-Killer-Pro/main/install.sh | bash
 ```
 
 ## 注意事项
 
-- 检测结果仅供参考，最终判断以各平台官方检测结果为准
-- 改写时会保持学术严谨性，不会编造虚假数据或文献
+- 检测结果仅供参考，以各平台官方结果为准
+- 改写保持学术严谨性，不编造数据或文献
 - 建议采用"人工修改 + 工具辅助"的组合策略
-- 适用于中文和英文学术论文
-
-## 高级：全局自动检测
-
-如果希望 Claude Code 在**任何项目**中自动识别 AIGC 相关意图并提示安装，将以下内容添加到你的全局配置文件 `~/.claude/CLAUDE.md`（不存在则创建）：
-
-```markdown
-## AIGC-Detector
-当用户提到论文检测、AIGC检测、AI降率、学术写作等需求时，检查是否已安装 aigc-detector skill（~/.claude/skills/aigc-detector/SKILL.md）。
-如未安装，建议用户执行：curl -sL https://raw.githubusercontent.com/free-revalution/AIGC-Killer-Pro/main/install.sh | bash
-```
-
-欢迎提交 Issue 和 Pull Request！
 
 ## License
 
-[MIT](LICENSE)
-
----
-
-<p align="center">
-  如果觉得有用，请给一个 <a href="https://github.com/free-revalution/AIGC-Killer-Pro">Star</a> 支持一下
-</p>
+[MIT](LICENSE) | 欢迎提交 [Issue](https://github.com/free-revalution/AIGC-Killer-Pro/issues) 和 [PR](https://github.com/free-revalution/AIGC-Killer-Pro/pulls)

@@ -36,7 +36,7 @@ Bilingual academic paper assistant. Two modes: **Detection & Rewrite** (analyze 
 | 询问用户 | AskUserQuestion 工具 | 输出选项编号，等待用户输入数字选择 |
 | 保存文件 | Write 工具 | 使用 Bash 写入文件 |
 | 读取文档 | Bash + python3 | 相同 |
-| 路径解析 | .claude/skills/ → ~/.aigc-killer/（fallback） | ~/.aigc-killer/（全局安装路径） |
+| 路径解析 | .claude/skills/ → ~/.claude/skills/（fallback） | ~/.claude/skills/（全局安装路径） |
 
 ---
 
