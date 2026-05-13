@@ -36,6 +36,8 @@ Bilingual academic paper assistant. Two modes: **Detection & Rewrite** (analyze 
 | 询问用户 | AskUserQuestion 工具 | 输出选项编号，等待用户输入数字选择 |
 | 保存文件 | Write 工具 | 使用 Bash 写入文件 |
 | 读取文档 | Bash + python3 | 相同 |
+| 生成图表 | Bash + python3 diagram_gen.py | 相同 |
+| 插入图片 | Bash + python3 docx_io.py insert_figure | 相同 |
 | 路径解析 | .claude/skills/ → ~/.claude/skills/（fallback） | ~/.claude/skills/（全局安装路径） |
 
 ---
@@ -416,7 +418,28 @@ python3 .claude/skills/aigc-detector/scripts/docx_io.py read "<文件路径>"
 - **Step W0: 环境准备** — 在工作目录创建 `About/` 目录，引导用户放入材料（论文模板 .docx、范文、代码、文档），扫描并分类文件。使用 `docx_io.py analyze` 解析模板格式。
 - **Step W1: 材料分析** — 解析模板格式要求，阅读范文理解写作风格，分析代码理解项目架构，收集用户信息（题目、学校、姓名、导师、字数等）。
 - **Step W2: 大纲生成** — 基于模板结构、范文模式、代码分析生成论文大纲，用户审核修改后确认。
-- **Step W3: 逐章撰写** — 按大纲逐章生成内容。代码相关章节基于实际代码分析。全程应用 AIGC 安全写作技法（参考 `references/rewrite_methods.md`）。每章生成后暂停，让用户确认或修改后再继续。维护全局上下文摘要确保跨章节一致性。
+- **Step W3: 逐章撰写** — 按大纲逐章生成内容。代码相关章节基于实际代码分析。全程应用 AIGC 安全写作技法（参考 `references/rewrite_methods.md`）。**图表识别与插入：**写每章时自动判断适合插入图表的位置（参考 `references/thesis_writing_guide.md` 中的图表规则），输出建议列表供用户确认。用户确认后：
+  1. 生成 Mermaid 文本描述
+  2. 调用 `diagram_gen.py generate` 渲染 PNG
+  3. 调用 `docx_io.py insert_figure` 插入图片 + 题注到 docx
+  每章生成后暂停，让用户确认或修改后再继续。维护全局上下文摘要确保跨章节一致性。
+**图表生成命令：**
+```bash
+# 生成图表（Mermaid 文本 → PNG）
+echo "graph TD\n  A --> B" | python3 ~/.claude/skills/aigc-detector/scripts/diagram_gen.py generate --output ./figures/fig1.png
+
+# 插入图片到 docx（在第5段后插入）
+python3 ~/.claude/skills/aigc-detector/scripts/docx_io.py insert_figure thesis.docx 5 ./figures/fig1.png --caption "图 3-1 系统架构图" --output thesis_with_fig.docx
+```
+
+如果全局路径不存在，回退到项目级路径：
+```bash
+python3 .claude/skills/aigc-detector/scripts/diagram_gen.py generate --output ./figures/fig1.png
+python3 .claude/skills/aigc-detector/scripts/docx_io.py insert_figure thesis.docx 5 ./figures/fig1.png --caption "图 3-1 系统架构图"
+```
+
+**注意：** 多张图片需从后往前插入（先插索引大的段落），避免段落索引偏移。
+
 - **Step W4: 格式应用与输出** — 使用 `docx_io.py formatted_write` 命令将 Markdown 文本转换为格式化 .docx（自动应用模板的页面布局、字体、行距等）。
 - **Step W5: AIGC 检测与优化** — 对完整论文执行检测流程（Step 0-3），识别高风险段落并改写优化，直到通过检测。
 
