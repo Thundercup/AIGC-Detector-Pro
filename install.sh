@@ -36,12 +36,23 @@ curl -fsSL "$REPO_URL/scripts/docx_io.py" -o "$INSTALL_DIR/scripts/docx_io.py"
 curl -fsSL "$REPO_URL/references/detection_principles.md" -o "$INSTALL_DIR/references/detection_principles.md"
 curl -fsSL "$REPO_URL/references/rewrite_methods.md" -o "$INSTALL_DIR/references/rewrite_methods.md"
 curl -fsSL "$REPO_URL/references/thesis_writing_guide.md" -o "$INSTALL_DIR/references/thesis_writing_guide.md"
+curl -fsSL "$REPO_URL/scripts/diagram_gen.py" -o "$INSTALL_DIR/scripts/diagram_gen.py"
 
 # --- Step 2: Check python-docx ---
 echo "==> Checking python-docx dependency..."
 if ! python3 -c "import docx" 2>/dev/null; then
     echo "==> Installing python-docx..."
     pip3 install python-docx -q
+fi
+
+# --- Step 2.5: Check mmdc (optional, for diagram generation) ---
+echo "==> Checking mmdc (Mermaid CLI)..."
+if ! command -v mmdc &>/dev/null; then
+    echo "    mmdc not found. Diagram generation requires Mermaid CLI."
+    echo "    Install later with: npm install -g @mermaid-js/mermaid-cli"
+    echo "    (Diagram feature will be unavailable until mmdc is installed)"
+else
+    echo "    mmdc found: $(command -v mmdc)"
 fi
 
 # --- Step 3: Generate agent entry pointers ---
