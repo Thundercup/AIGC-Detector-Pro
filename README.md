@@ -82,13 +82,32 @@ curl -sL https://raw.githubusercontent.com/free-revalution/AIGC-Killer-Pro/main/
   -> W0 环境准备 + 模板格式解析
   -> W1 材料分析（格式/风格/架构）
   -> W2 大纲生成 + 用户审核
-  -> W3 逐章撰写（AIGC 安全写作）
+  -> W3 逐章撰写（AIGC 安全写作 + 自动生成图表）
   -> W4 格式化输出 .docx
   -> W5 AIGC 检测 + 迭代优化
 ```
 
 ```
 帮我写毕业论文，模板在About/目录
+```
+
+### 图表自动生成
+
+写论文时自动识别适合插入图表的位置，基于 Mermaid 语法生成专业图表并直接插入 .docx。
+
+| 图表类型 | 适用章节 |
+|---------|---------|
+| 流程图 / 架构图 | 需求分析、系统设计、系统实现 |
+| UML 类图 | 详细设计 |
+| 数据库 ER 图 | 数据库设计 |
+| 时序图 / 状态图 | 详细设计 |
+
+```
+工作流程：
+  W3 写章节 -> LLM 识别图表位置
+  -> 输出 Mermaid 代码供用户确认
+  -> diagram_gen.py 渲染 PNG
+  -> docx_io.py insert_figure 插入 .docx
 ```
 
 **材料准备：**
@@ -116,6 +135,7 @@ curl -sL https://raw.githubusercontent.com/free-revalution/AIGC-Killer-Pro/main/
 安装脚本自动完成：
 - 下载 Skill 文件到 `~/.claude/skills/aigc-detector/`
 - 检查并安装 `python-docx` 依赖
+- 检查 `mmdc`（Mermaid CLI，图表功能所需，可选）
 
 **2. 使用**
 
@@ -166,7 +186,8 @@ AIGC-Killer-Pro/
 ├── .claude/skills/aigc-detector/   # 核心 Skill
 │   ├── SKILL.md                     # 主入口（模式路由 + 检测/编写流程）
 │   ├── scripts/
-│   │   └── docx_io.py               # Word 文档读写/模板解析/格式化输出
+│   │   ├── docx_io.py               # Word 文档读写/模板解析/格式化输出
+│   │   └── diagram_gen.py            # Mermaid 图表渲染为 PNG
 │   └── references/
 │       ├── detection_principles.md  # AIGC 检测原理知识库
 │       ├── rewrite_methods.md       # 7 大改写技法指南（中/英）

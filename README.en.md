@@ -78,13 +78,32 @@ Prepare materials (About/ dir: template + sample + code)
   -> W0 Environment setup + template parsing
   -> W1 Material analysis (format / style / architecture)
   -> W2 Outline generation + user review
-  -> W3 Chapter-by-chapter writing (AIGC-safe)
+  -> W3 Chapter-by-chapter writing (AIGC-safe + auto diagram generation)
   -> W4 Formatted .docx output
   -> W5 AIGC detection + iterative optimization
 ```
 
 ```
 Help me write my graduation thesis, template is in About/
+```
+
+### Auto Diagram Generation
+
+Automatically identifies positions in thesis chapters where diagrams would be helpful, generates professional charts using Mermaid syntax, and inserts them directly into the .docx.
+
+| Diagram Type | Applicable Chapters |
+|-------------|---------------------|
+| Flowcharts / Architecture | Requirements, System Design, Implementation |
+| UML Class Diagrams | Detailed Design |
+| Database ER Diagrams | Database Design |
+| Sequence / State Diagrams | Detailed Design |
+
+```
+Workflow:
+  W3 Write chapter -> LLM identifies diagram positions
+  -> Outputs Mermaid code for user confirmation
+  -> diagram_gen.py renders PNG
+  -> docx_io.py insert_figure inserts into .docx
 ```
 
 ## Quick Start
@@ -98,6 +117,7 @@ curl -sL https://raw.githubusercontent.com/free-revalution/AIGC-Killer-Pro/main/
 The installer automatically:
 - Downloads Skill files to `~/.claude/skills/aigc-detector/`
 - Checks and installs `python-docx` dependency
+- Checks `mmdc` (Mermaid CLI, needed for diagram feature, optional)
 
 **2. Use**
 
@@ -148,7 +168,8 @@ AIGC-Killer-Pro/
 ├── .claude/skills/aigc-detector/   # Core Skill
 │   ├── SKILL.md                     # Entry point (mode routing + workflows)
 │   ├── scripts/
-│   │   └── docx_io.py               # Word I/O, template parsing, formatted output
+│   │   ├── docx_io.py               # Word I/O, template parsing, formatted output
+│   │   └── diagram_gen.py            # Mermaid diagram rendering to PNG
 │   └── references/
 │       ├── detection_principles.md  # AIGC detection knowledge base
 │       ├── rewrite_methods.md       # 7 rewrite techniques (CN/EN)
