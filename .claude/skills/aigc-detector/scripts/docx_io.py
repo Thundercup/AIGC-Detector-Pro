@@ -7,6 +7,7 @@ Commands:
   write <file>                   Write plain text from stdin to new .docx
   analyze <file>                 Extract template formatting metadata
   formatted_write <file>         Write formatted Markdown to .docx (--template for format source)
+  insert_figure <file> <idx> <img>  Insert image + caption after paragraph <idx>
 """
 
 import sys
@@ -566,9 +567,73 @@ def formatted_write_docx(file_path: str, text: str, template_path: str = None):
     doc.save(file_path)
 
 
+def insert_figure(file_path: str, paragraph_index: int, image_path: str,
+                  caption: str = "", output_path: str = None) -> str:
+    """Insert an image + caption paragraph after the specified paragraph index."""
+    from docx import Document
+    from docx.shared import Cm, Pt
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+    from docx.oxml.ns import qn
+
+    doc = Document(file_path)
+    paragraphs = doc.paragraphs
+
+    if paragraph_index < 1 or paragraph_index > len(paragraphs):
+        print(f"Error: paragraph index {paragraph_index} out of range (1-{len(paragraphs)})",
+              file=sys.stderr)
+        sys.exit(1)
+
+    target_para = paragraphs[paragraph_index - 1]
+
+    # Calculate image width from page layout (default 14cm if unknown)
+    image_width = Cm(14)
+    try:
+        section = doc.sections[0]
+        page_width = section.page_width
+        left_margin = section.left_margin
+        right_margin = section.right_margin
+        if page_width and left_margin and right_margin:
+            image_width = page_width - left_margin - right_margin
+    except Exception:
+        pass
+
+    # Create image paragraph after target
+    img_para = doc.add_paragraph()
+    img_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = img_para.add_run()
+    run.add_picture(image_path, width=image_width)
+
+    # Move image paragraph to after target
+    target_element = target_para._element
+    img_element = img_para._element
+    target_element.addnext(img_element)
+
+    # Create caption paragraph if provided
+    if caption:
+        cap_para = doc.add_paragraph()
+        cap_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        cap_run = cap_para.add_run(caption)
+        cap_run.font.size = Pt(10.5)
+        cap_run.font.name = "宋体"
+        cap_run._element.rPr.rFonts.set(qn('w:eastAsia'), "宋体")
+
+        # Move caption to after image
+        img_element.addnext(cap_para._element)
+
+    # Save
+    out = output_path or file_path
+    out_dir = os.path.dirname(out)
+    if out_dir:
+        os.makedirs(out_dir, exist_ok=True)
+    doc.save(out)
+
+    print(out)
+    return out
+
+
 def main():
     if len(sys.argv) < 3:
-        print("Usage: python3 docx_io.py <read|replace|write|analyze|formatted_write> "
+        print("Usage: python3 docx_io.py <read|replace|write|analyze|formatted_write|insert_figure> "
               "<file_path> [args...]", file=sys.stderr)
         sys.exit(1)
 
@@ -615,6 +680,28 @@ def main():
         text = sys.stdin.read()
         formatted_write_docx(file_path, text, template_path)
         print(f"Written to: {file_path}", file=sys.stderr)
+    elif command == "insert_figure":
+        if len(sys.argv) < 5:
+            print("Usage: python3 docx_io.py insert_figure <file_path> <paragraph_index> "
+                  "<image_path> [--caption <text>] [--output <path>]", file=sys.stderr)
+            sys.exit(1)
+        index = int(sys.argv[3])
+        image = sys.argv[4]
+        caption = ""
+        out_path = None
+        if "--caption" in sys.argv:
+            cidx = sys.argv.index("--caption")
+            if cidx + 1 < len(sys.argv):
+                caption = sys.argv[cidx + 1]
+        if "--output" in sys.argv:
+            oidx = sys.argv.index("--output")
+            if oidx + 1 < len(sys.argv):
+                out_path = sys.argv[oidx + 1]
+        if not os.path.exists(image):
+            print(f"Error: image not found: {image}", file=sys.stderr)
+            sys.exit(1)
+        output = insert_figure(file_path, index, image, caption, output_path=out_path)
+        print(f"Figure inserted: {output}", file=sys.stderr)
     else:
         print(f"Error: unknown command '{command}'. "
               f"Use 'read', 'replace', 'write', 'analyze', or 'formatted_write'.",
